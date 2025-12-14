@@ -1,10 +1,17 @@
 {
     "not-player": "You must be a player to use this command",
     "no-api": "Couldn't get server API.",
-    "setstab-desc": "Sets the stability of the chunk you are in to a specific value. 1 is neutral stability, less is unstable and more is positive stability. Note that chunks are cubic, so higher or lower chunks in your column will have different values. \n\n<strong>Tip:</strong> Use .debug wireframe chunk to see chunk boundaries.",
+    "setstab-desc": "Sets the stability of the chunk you are in to a specific value. 1 is neutral stability, less is unstable and more is positive stability. Note that chunks are cubic, so higher or lower chunks in your column will have different values. \n\n<strong>Tip:</strong> Use .debug wireframe chunk to see chunk boundaries. \n\n<strong>Value range:</strong> -10000 to 10000.",
     "resetstab-desc": "Resets the stability of the chunk you are in to its default value.",
     "getstab-desc": "Gets the stability of the chunk you are in.",
-    "get-output": "<strong>Stability:</strong> {0}",
+    "get-output": "<strong>Stability @ chunkpos {0}:</strong> {1}",
     "get-error": "Couldn't get chunk stability.",
-    "get-not-set": "Not set."
+    "get-not-set": "Not set.",
+    "setstab-success": "Stability @ chunkpos {0} set to {1}.",
+    "setstabmode-desc": "Sets the stability mode. There are three modes. Vanilla behavior, where chunks all have their own stability values. Global stability mode, where all chunk stability values are the same value. Global stability offset mode, where every chunk has an offset applied to it. \n\n0 = Vanila behavior.\n1 = Global stability.\n 2 = Global stability offset.",
+    "setstabmode-success": "Stability mode set to {0}.",
+    "setglobalstab-desc": "Sets the stability value for all chunks to a specific value. \n\n<strong>Value range:</strong> -10000 to 10000.",
+    "setglobalstab-success": "Global stability set to {0}.",
+    "setglobalstaboffset-desc": "Sets a value to apply as an offset to all chunk stability values. Final stability values will be clamped to -10000 to 10000. \n\n<strong>Value range:</strong> -10000 to 10000.",
+    "setglobalstaboffset-success": "Global stability offset set to {0}."
 }

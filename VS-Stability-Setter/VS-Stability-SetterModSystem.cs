@@ -67,7 +67,7 @@ public class VS_Stability_SetterModSystem : ModSystem
             .WithDescription(Lang.Get("vsstabilitysetter:setstab-desc"))
             .RequiresPrivilege(Privilege.ban)
             .RequiresPlayer()
-            .WithArgs(ServerAPI.ChatCommands.Parsers.Float("stabilityAmount"))
+            .WithArgs(ServerAPI.ChatCommands.Parsers.DoubleRange("stability", -10000, 10000))
             .HandleWith(new OnCommandDelegate(OnSetStabCommand));
         api.ChatCommands.Create("resetStability")
             .WithDescription(Lang.Get("vsstabilitysetter:resetstab-desc"))
@@ -96,7 +96,7 @@ public class VS_Stability_SetterModSystem : ModSystem
         ServerChunkPos chunkPos = new(player.Entity.Pos.AsBlockPos);
         setChunks[chunkPos.ToString()] = stability;
 
-        return TextCommandResult.Success();
+        return TextCommandResult.Success(Lang.Get("vsstabilitysetter:setstab-success", chunkPos.ToString(), stability));
     }
 
     private TextCommandResult OnResetStabCommand(TextCommandCallingArgs args) {
@@ -126,10 +126,10 @@ public class VS_Stability_SetterModSystem : ModSystem
         float stability = StabSystem.GetTemporalStability(player.Entity.Pos.AsBlockPos);
 
         if(setChunks.ContainsKey(chunkPos.ToString()) ) {
-            return TextCommandResult.Success(Lang.Get("vsstabilitysetter:get-output", setChunks[chunkPos.ToString()].ToString()));
+            return TextCommandResult.Success(Lang.Get("vsstabilitysetter:get-output", chunkPos.ToString(), setChunks[chunkPos.ToString()].ToString()));
         } else {
             if(StabSystem != null) {
-                return TextCommandResult.Success(Lang.Get("vsstabilitysetter:get-output", stability.ToString()));
+                return TextCommandResult.Success(Lang.Get("vsstabilitysetter:get-output", chunkPos.ToString(), stability.ToString()));
             }
             return TextCommandResult.Error(Lang.Get("vsstabilitysetter:get-error"));
         }
