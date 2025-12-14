@@ -25,14 +25,9 @@ public class VS_Stability_SetterModSystem : ModSystem
         return side == EnumAppSide.Server;
     }
 
-    [ProtoContract]
-    public class StabilityChunkData {
-        [ProtoMember(1)]
-        public required IServerChunk Chunk { get; set; }
-        [ProtoMember(2)]
-        public float Stability { get; set; }
-    }
-
+    /// <summary>
+    /// Used to store the chunk position, and convert a blockpos to a usable chunk position.
+    /// </summary>
     [ProtoContract]
     public class ServerChunkPos {
         [ProtoMember(1)]
@@ -120,6 +115,11 @@ public class VS_Stability_SetterModSystem : ModSystem
         api.Event.GameWorldSave += OnSaveGameSaving;
     }
 
+    /// <summary>
+    /// Converts the mode integer value to a string.
+    /// </summary>
+    /// <param name="mode"></param>
+    /// <returns></returns>
     private string GetModeString(int mode) {
         string StabilityModeString = "";
         switch(mode) {
@@ -136,14 +136,19 @@ public class VS_Stability_SetterModSystem : ModSystem
         return StabilityModeString;
     }
 
+    #region Commands
+    /// <summary>
+    /// Command handler for setting the stability value of a chunk. 
+    /// </summary>
+    /// <param name="args"></param>
+    /// <returns></returns>
     private TextCommandResult OnSetStabCommand(TextCommandCallingArgs args) {
-        
         IServerPlayer player = (IServerPlayer) args.Caller.Player;
         
-        if (player == null || ServerAPI == null) { return TextCommandResult.Error(Lang.Get("vsstabilitysetter:not-player")); }
+        if (player == null) { return TextCommandResult.Error(Lang.Get("vsstabilitysetter:not-player")); }
         if (ServerAPI == null) { return TextCommandResult.Error(Lang.Get("vsstabilitysetter:no-api")); }
 
-        float stability = args.LastArg == null ? 1 : args.LastArg.ToString().ToFloat();
+        float stability = args.LastArg == null ? 1 : args.LastArg.ToString().ToFloat(); //Gets the stability from arguments. Defaults to 1 if someehow null.
 
         ServerChunkPos chunkPos = new(player.Entity.Pos.AsBlockPos);
         setChunks[chunkPos.ToString()] = stability;
@@ -151,10 +156,15 @@ public class VS_Stability_SetterModSystem : ModSystem
         return TextCommandResult.Success(Lang.Get("vsstabilitysetter:setstab-success", chunkPos.ToString(), stability));
     }
 
+    /// <summary>
+    /// Command handler for resetting the stability value of a chunk.
+    /// </summary>
+    /// <param name="args"></param>
+    /// <returns></returns>
     private TextCommandResult OnResetStabCommand(TextCommandCallingArgs args) {
         IServerPlayer player = (IServerPlayer) args.Caller.Player;
 
-        if (player == null || ServerAPI == null) { return TextCommandResult.Error(Lang.Get("vsstabilitysetter:not-player")); }
+        if (player == null) { return TextCommandResult.Error(Lang.Get("vsstabilitysetter:not-player")); }
         if (ServerAPI == null) { return TextCommandResult.Error(Lang.Get("vsstabilitysetter:no-api")); }
 
         ServerChunkPos chunkPos = new(player.Entity.Pos.AsBlockPos);
@@ -166,26 +176,30 @@ public class VS_Stability_SetterModSystem : ModSystem
         return TextCommandResult.Success();
     }
 
+    /// <summary>
+    /// Command handler for getting the stability value of a chunk.
+    /// </summary>
+    /// <param name="args"></param>
+    /// <returns></returns>
     private TextCommandResult OnGetStabCommand(TextCommandCallingArgs args) {
-        
         IServerPlayer player = (IServerPlayer) args.Caller.Player;
         
-        if (player == null || ServerAPI == null) { return TextCommandResult.Error(Lang.Get("vsstabilitysetter:not-player")); }
+        if (player == null) { return TextCommandResult.Error(Lang.Get("vsstabilitysetter:not-player")); }
         if (ServerAPI == null) { return TextCommandResult.Error(Lang.Get("vsstabilitysetter:no-api")); }
 
-        Vintagestory.GameContent.SystemTemporalStability StabSystem = ServerAPI.ModLoader.GetModSystem<Vintagestory.GameContent.SystemTemporalStability>();
+        Vintagestory.GameContent.SystemTemporalStability StabSystem = ServerAPI.ModLoader.GetModSystem<Vintagestory.GameContent.SystemTemporalStability>(); //Declare a temporal stability system to later get the stability value from a BlockPos.
         ServerChunkPos chunkPos = new(player.Entity.Pos.AsBlockPos);
         float stability = StabSystem.GetTemporalStability(player.Entity.Pos.AsBlockPos);
 
         string extraInfo = "";
 
         switch(StabilityMode) {
-            case 0:
+            case 0: //Vanilla behavior mode
                 break;
-            case 1:
+            case 1: //Global stability mode
                 extraInfo = Lang.Get("vsstabilitysetter:extrainfo-global");
                 break;
-            case 2:
+            case 2: //Global stability offset mode
                 extraInfo = Lang.Get("vsstabilitysetter:extrainfo-offset", GlobalStabilityOffset.ToString());
                 break;
         } 
@@ -196,18 +210,33 @@ public class VS_Stability_SetterModSystem : ModSystem
         return TextCommandResult.Error(Lang.Get("vsstabilitysetter:get-error"));
     }
 
+    /// <summary>
+    /// Command handler for setting the global stability offset value.
+    /// </summary>
+    /// <param name="args"></param>
+    /// <returns></returns>
     private TextCommandResult OnSetGlobalStabOffsetCommand(TextCommandCallingArgs args) {
         float stability = args.LastArg == null ? 1 : args.LastArg.ToString().ToFloat();
         GlobalStabilityOffset = stability;
         return TextCommandResult.Success(Lang.Get("vsstabilitysetter:setglobalstaboffset-success", GlobalStabilityOffset));
     }
 
+    /// <summary>
+    /// Command handler for setting the global stability value.
+    /// </summary>
+    /// <param name="args"></param>
+    /// <returns></returns>
     private TextCommandResult OnSetGlobalStabCommand(TextCommandCallingArgs args) {
         float stability = args.LastArg == null ? 1 : args.LastArg.ToString().ToFloat();
         GlobalStability = stability;
         return TextCommandResult.Success(Lang.Get("vsstabilitysetter:setglobalstab-success", GlobalStability));
     }
 
+    /// <summary>
+    /// Command handler for setting the stability mode.
+    /// </summary>
+    /// <param name="args"></param>
+    /// <returns></returns>
     private TextCommandResult OnSetStabModeCommand(TextCommandCallingArgs args) {
         int mode = args.LastArg == null ? 0 : Convert.ToInt32(args.LastArg.ToString());
         StabilityMode = mode;
@@ -216,17 +245,21 @@ public class VS_Stability_SetterModSystem : ModSystem
 
         return TextCommandResult.Success(Lang.Get("vsstabilitysetter:setstabmode-success", StabilityModeString));
     }
+    #endregion
 
+    /// <summary>
+    /// Harmony patch that overrides the stability value return of GetTemporalStability(). The vanilla behavior actually seems to use the generation algorithm whenever it is called, and does not store the value anywhere so the getter has to be patched.
+    /// </summary>
     [HarmonyPatch(typeof(Vintagestory.GameContent.SystemTemporalStability), "GetTemporalStability", new Type[] {typeof(double), typeof(double), typeof(double)})]
     public class TemporalStabilityPatch {
         public static void Postfix(Vintagestory.GameContent.SystemTemporalStability __instance, ref float __result, ref double x, ref double y, ref double z) {
             if(ServerAPI != null) {
                 bool stabilityEnabled = (bool)ServerAPI.World.Config["temporalStability"].GetValue();
-                if(stabilityEnabled) {
+                if(stabilityEnabled) { //Only change anything if stability is enabled.
                     BlockPos pos = new((int)x, (int)y, (int)z);
                     ServerChunkPos chunkPos = new(pos);
                     if(setChunks != null && StabilityMode == 0) { //Vanilla behavior mode
-                        if(setChunks.ContainsKey(chunkPos.ToString())) {
+                        if(setChunks.ContainsKey(chunkPos.ToString())) { //Only change if the chunk has been set.
                             __result = setChunks[chunkPos.ToString()];
                         }
                     }
@@ -240,11 +273,17 @@ public class VS_Stability_SetterModSystem : ModSystem
                             }
                         }
                         __result += GlobalStabilityOffset;
+                        __result = Math.Clamp(__result, -10000, 10000); //Don't let it go out of bounds!
                     }
                 }
             }
         }
     }
+
+    #region Data serialization
+    /// <summary>
+    /// Override the SaveGameSaving method to save the chunk stability data.
+    /// </summary>
     private void OnSaveGameSaving() {
         if(ServerAPI == null) {
             return;
@@ -265,6 +304,9 @@ public class VS_Stability_SetterModSystem : ModSystem
         ServerAPI.Logger.Debug("Saved chunk stability data");
     }
 
+    /// <summary>
+    /// Override the SaveGameLoading method to load the chunk stability data.
+    /// </summary>
     private void OnSaveGameLoading() {
         if(ServerAPI == null) {
             return;
@@ -282,7 +324,11 @@ public class VS_Stability_SetterModSystem : ModSystem
 
         ServerAPI.Logger.Debug("Loaded chunk stability data");
     }
+    #endregion
 
+    /// <summary>
+    /// Unpatch the vanilla method before disposing the mod.
+    /// </summary>
     public override void Dispose() {
         harmony?.UnpatchAll(Mod.Info.ModID);
         base.Dispose();
