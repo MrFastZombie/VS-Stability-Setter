@@ -1,7 +1,5 @@
 ﻿using Vintagestory.API.Common;
 using Vintagestory.API.Server;
-using Vintagestory.API.Client;
-using System.Runtime.CompilerServices;
 using Vintagestory.API.Config;
 using ProtoBuf;
 using Vintagestory.API.Util;
@@ -9,7 +7,6 @@ using System.Collections.Generic;
 using HarmonyLib;
 using System;
 using Vintagestory.API.MathTools;
-using Newtonsoft.Json;
 
 namespace VS_Stability_Setter;
 
@@ -18,6 +15,9 @@ public class VS_Stability_SetterModSystem : ModSystem
      private static ICoreServerAPI? ServerAPI { get; set; }
      
      private static Dictionary<string, float>  setChunks = new();
+     private static int StabilityMode = 0;
+     private static float GlobalStability = 1;
+     private static float GlobalStabilityOffset = 0;
 
      private Harmony? harmony;
 
@@ -78,10 +78,62 @@ public class VS_Stability_SetterModSystem : ModSystem
             .WithDescription(Lang.Get("vsstabilitysetter:getstab-desc"))
             .RequiresPrivilege(Privilege.chat)
             .RequiresPlayer()
-            .HandleWith(new OnCommandDelegate(OnGetStabCommand));
+            .HandleWith(new OnCommandDelegate(OnGetStabCommand))
+            .BeginSubCommand("global")
+                .WithDescription(Lang.Get("vsstabilitysetter:get-stabglobal-desc"))
+                .RequiresPrivilege(Privilege.chat)
+                .HandleWith((args) => {
+                    return TextCommandResult.Success(Lang.Get("vsstabilitysetter:get-globalstab-success", GlobalStability));
+                })
+            .EndSubCommand()
+            .BeginSubCommand("offset")
+                .WithDescription(Lang.Get("vsstabilitysetter:get-stabglobaloffset-desc"))
+                .RequiresPrivilege(Privilege.chat)
+                .HandleWith((args) => {
+                    return TextCommandResult.Success(Lang.Get("vsstabilitysetter:get-globaloffset-success", GlobalStabilityOffset));
+                })
+            .EndSubCommand()
+            .BeginSubCommand("mode")
+                .WithDescription(Lang.Get("vsstabilitysetter:get-mode-desc"))
+                .RequiresPrivilege(Privilege.chat)
+                .HandleWith((args) => {
+                    return TextCommandResult.Success(Lang.Get("vsstabilitysetter:get-mode-success", GetModeString(StabilityMode)));
+                })
+            .EndSubCommand();
+        api.ChatCommands.Create("setStabilityMode")
+            .WithDescription(Lang.Get("vsstabilitysetter:setstabmode-desc"))
+            .RequiresPrivilege(Privilege.ban)
+            .HandleWith(new OnCommandDelegate(OnSetStabModeCommand))
+            .WithArgs(ServerAPI.ChatCommands.Parsers.IntRange("mode", 0, 2));
+        api.ChatCommands.Create("setGlobalStability")
+            .WithDescription(Lang.Get("vsstabilitysetter:setglobalstab-desc"))
+            .WithArgs(ServerAPI.ChatCommands.Parsers.DoubleRange("stability", -10000, 10000))
+            .RequiresPrivilege(Privilege.ban)
+            .HandleWith(new OnCommandDelegate(OnSetGlobalStabCommand));
+        api.ChatCommands.Create("setGlobalStabilityOffset")
+            .WithDescription(Lang.Get("vsstabilitysetter:setglobalstaboffset-desc"))
+            .WithArgs(ServerAPI.ChatCommands.Parsers.DoubleRange("stability", -10000, 10000))
+            .RequiresPrivilege(Privilege.ban)
+            .HandleWith(new OnCommandDelegate(OnSetGlobalStabOffsetCommand));
         
         api.Event.SaveGameLoaded += OnSaveGameLoading;
         api.Event.GameWorldSave += OnSaveGameSaving;
+    }
+
+    private string GetModeString(int mode) {
+        string StabilityModeString = "";
+        switch(mode) {
+            case 0:
+                StabilityModeString = Lang.Get("vsstabilitysetter:stab-mode-0");
+                break;
+            case 1:
+                StabilityModeString = Lang.Get("vsstabilitysetter:stab-mode-1");
+                break;
+            case 2:
+                StabilityModeString = Lang.Get("vsstabilitysetter:stab-mode-2");
+                break;
+        }
+        return StabilityModeString;
     }
 
     private TextCommandResult OnSetStabCommand(TextCommandCallingArgs args) {
@@ -125,14 +177,44 @@ public class VS_Stability_SetterModSystem : ModSystem
         ServerChunkPos chunkPos = new(player.Entity.Pos.AsBlockPos);
         float stability = StabSystem.GetTemporalStability(player.Entity.Pos.AsBlockPos);
 
-        if(setChunks.ContainsKey(chunkPos.ToString()) ) {
-            return TextCommandResult.Success(Lang.Get("vsstabilitysetter:get-output", chunkPos.ToString(), setChunks[chunkPos.ToString()].ToString()));
-        } else {
-            if(StabSystem != null) {
-                return TextCommandResult.Success(Lang.Get("vsstabilitysetter:get-output", chunkPos.ToString(), stability.ToString()));
-            }
-            return TextCommandResult.Error(Lang.Get("vsstabilitysetter:get-error"));
+        string extraInfo = "";
+
+        switch(StabilityMode) {
+            case 0:
+                break;
+            case 1:
+                extraInfo = Lang.Get("vsstabilitysetter:extrainfo-global");
+                break;
+            case 2:
+                extraInfo = Lang.Get("vsstabilitysetter:extrainfo-offset", GlobalStabilityOffset.ToString());
+                break;
+        } 
+
+        if(StabSystem != null) {
+            return TextCommandResult.Success(Lang.Get("vsstabilitysetter:get-output", chunkPos.ToString(), stability.ToString(), extraInfo));
         }
+        return TextCommandResult.Error(Lang.Get("vsstabilitysetter:get-error"));
+    }
+
+    private TextCommandResult OnSetGlobalStabOffsetCommand(TextCommandCallingArgs args) {
+        float stability = args.LastArg == null ? 1 : args.LastArg.ToString().ToFloat();
+        GlobalStabilityOffset = stability;
+        return TextCommandResult.Success(Lang.Get("vsstabilitysetter:setglobalstaboffset-success", GlobalStabilityOffset));
+    }
+
+    private TextCommandResult OnSetGlobalStabCommand(TextCommandCallingArgs args) {
+        float stability = args.LastArg == null ? 1 : args.LastArg.ToString().ToFloat();
+        GlobalStability = stability;
+        return TextCommandResult.Success(Lang.Get("vsstabilitysetter:setglobalstab-success", GlobalStability));
+    }
+
+    private TextCommandResult OnSetStabModeCommand(TextCommandCallingArgs args) {
+        int mode = args.LastArg == null ? 0 : Convert.ToInt32(args.LastArg.ToString());
+        StabilityMode = mode;
+
+        string StabilityModeString = GetModeString(StabilityMode);
+
+        return TextCommandResult.Success(Lang.Get("vsstabilitysetter:setstabmode-success", StabilityModeString));
     }
 
     [HarmonyPatch(typeof(Vintagestory.GameContent.SystemTemporalStability), "GetTemporalStability", new Type[] {typeof(double), typeof(double), typeof(double)})]
@@ -143,32 +225,62 @@ public class VS_Stability_SetterModSystem : ModSystem
                 if(stabilityEnabled) {
                     BlockPos pos = new((int)x, (int)y, (int)z);
                     ServerChunkPos chunkPos = new(pos);
-                    if(setChunks != null && setChunks != null) {
+                    if(setChunks != null && StabilityMode == 0) { //Vanilla behavior mode
                         if(setChunks.ContainsKey(chunkPos.ToString())) {
                             __result = setChunks[chunkPos.ToString()];
                         }
+                    }
+                    if(StabilityMode == 1) { //Global stability mode
+                        __result = GlobalStability;
+                    }
+                    if(StabilityMode == 2) { //Global stability offset mode
+                        if(setChunks != null) {
+                            if(setChunks.ContainsKey(chunkPos.ToString())) {
+                                __result = setChunks[chunkPos.ToString()];
+                            }
+                        }
+                        __result += GlobalStabilityOffset;
                     }
                 }
             }
         }
     }
     private void OnSaveGameSaving() {
-        if(setChunks == null || ServerAPI == null) {
+        if(ServerAPI == null) {
             return;
         }
-        byte[] serializedData = SerializerUtil.Serialize<Dictionary<string, float>>(setChunks); //I HATE PROTOBUF I HATE PROTOBUF I HATE PROTOBUF I HATE PROTOBUF I HATE PROTOBUF I HATE PROTOBUF I HATE PROTOBUF 
-        //byte[] serializedData = SerializerUtil.Serialize<Dictionary<IServerChunk, float>>(setChunks);
-        ServerAPI.WorldManager.SaveGame.StoreData("setStabilityChunks", serializedData); //TODO: Make this save properly. (No Serializer for the chunks!!!)
-        ServerAPI.Logger.Debug("Saved chunk stability overrides");
+
+        if(setChunks != null) {
+            byte[] serializedDictionary = SerializerUtil.Serialize<Dictionary<string, float>>(setChunks); //I HATE PROTOBUF I HATE PROTOBUF I HATE PROTOBUF I HATE PROTOBUF I HATE PROTOBUF I HATE PROTOBUF I HATE PROTOBUF 
+            ServerAPI.WorldManager.SaveGame.StoreData("setStabilityChunks", serializedDictionary);
+        }
+
+        byte[] serializedMode = SerializerUtil.Serialize<int>(StabilityMode);
+        byte[] serializedGlobalStab = SerializerUtil.Serialize<float>(GlobalStability);
+        byte[] serializedGlobalStabOffset = SerializerUtil.Serialize<float>(GlobalStabilityOffset);
+        
+        ServerAPI.WorldManager.SaveGame.StoreData("setStabilityMode", serializedMode);
+        ServerAPI.WorldManager.SaveGame.StoreData("setStabilityGlobalStab", serializedGlobalStab);
+        ServerAPI.WorldManager.SaveGame.StoreData("setStabilityGlobalStabOffset", serializedGlobalStabOffset);
+        ServerAPI.Logger.Debug("Saved chunk stability data");
     }
 
     private void OnSaveGameLoading() {
         if(ServerAPI == null) {
             return;
         }
+
         byte[] chunkdata = ServerAPI.WorldManager.SaveGame.GetData("setStabilityChunks");
+        byte[] modedata = ServerAPI.WorldManager.SaveGame.GetData("setStabilityMode");
+        byte[] globalStabData = ServerAPI.WorldManager.SaveGame.GetData("setStabilityGlobalStab");
+        byte[] globalStabOffsetData = ServerAPI.WorldManager.SaveGame.GetData("setStabilityGlobalStabOffset");
+
         setChunks = chunkdata == null ? new() : SerializerUtil.Deserialize<Dictionary<string, float>>(chunkdata);
-        ServerAPI.Logger.Debug("Loaded chunk stability overrides");
+        StabilityMode = modedata == null ? 0 : SerializerUtil.Deserialize<int>(modedata);
+        GlobalStability = globalStabData == null ? 1 : SerializerUtil.Deserialize<float>(globalStabData);
+        GlobalStabilityOffset = globalStabOffsetData == null ? 0 : SerializerUtil.Deserialize<float>(globalStabOffsetData);
+
+        ServerAPI.Logger.Debug("Loaded chunk stability data");
     }
 
     public override void Dispose() {
