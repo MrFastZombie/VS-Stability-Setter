@@ -1,0 +1,14 @@
+{
+    "$schema": "https://moddbcdn.vintagestory.at/schema/modinfo.latest.json",
+    "type": "Code",
+    "modid": "vsstabilitysetter",
+    "name": "VS-Stability-Setter",
+    "authors": [
+        "MrFastZombie"
+    ],
+    "description": "Uses Harmony patching to set chunk stability.",
+    "version": "1.0.0",
+    "dependencies": {
+        "game": "1.21.0"
+    }
+}
