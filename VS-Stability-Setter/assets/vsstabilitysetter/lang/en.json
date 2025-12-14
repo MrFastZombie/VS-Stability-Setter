@@ -1,0 +1,10 @@
+{
+    "not-player": "You must be a player to use this command",
+    "no-api": "Couldn't get server API.",
+    "setstab-desc": "Sets the stability of the chunk you are in to a specific value. 1 is neutral stability, less is unstable and more is positive stability. Note that chunks are cubic, so higher or lower chunks in your column will have different values. \n\n<strong>Tip:</strong> Use .debug wireframe chunk to see chunk boundaries.",
+    "resetstab-desc": "Resets the stability of the chunk you are in to its default value.",
+    "getstab-desc": "Gets the stability of the chunk you are in.",
+    "get-output": "<strong>Stability:</strong> {0}",
+    "get-error": "Couldn't get chunk stability.",
+    "get-not-set": "Not set."
+}

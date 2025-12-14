@@ -64,18 +64,18 @@ public class VS_Stability_SetterModSystem : ModSystem
         harmony.PatchAll();
 
         api.ChatCommands.Create("setStability")
-            .WithDescription(Lang.Get("vs-stability-setter:setstab-desc"))
+            .WithDescription(Lang.Get("vsstabilitysetter:setstab-desc"))
             .RequiresPrivilege(Privilege.ban)
             .RequiresPlayer()
             .WithArgs(ServerAPI.ChatCommands.Parsers.Float("stabilityAmount"))
             .HandleWith(new OnCommandDelegate(OnSetStabCommand));
         api.ChatCommands.Create("resetStability")
-            .WithDescription(Lang.Get("vs-stability-setter:resetstab-desc"))
+            .WithDescription(Lang.Get("vsstabilitysetter:resetstab-desc"))
             .RequiresPrivilege(Privilege.ban)
             .RequiresPlayer()
             .HandleWith(new OnCommandDelegate(OnResetStabCommand));
         api.ChatCommands.Create("getStability")
-            .WithDescription(Lang.Get("vs-stability-setter:getstab-desc"))
+            .WithDescription(Lang.Get("vsstabilitysetter:getstab-desc"))
             .RequiresPrivilege(Privilege.chat)
             .RequiresPlayer()
             .HandleWith(new OnCommandDelegate(OnGetStabCommand));
@@ -88,9 +88,8 @@ public class VS_Stability_SetterModSystem : ModSystem
         
         IServerPlayer player = (IServerPlayer) args.Caller.Player;
         
-        if (player == null || ServerAPI == null) {
-            return TextCommandResult.Error(Lang.Get("vs-stability-setter:not-player"));
-        }
+        if (player == null || ServerAPI == null) { return TextCommandResult.Error(Lang.Get("vsstabilitysetter:not-player")); }
+        if (ServerAPI == null) { return TextCommandResult.Error(Lang.Get("vsstabilitysetter:no-api")); }
 
         float stability = args.LastArg == null ? 1 : args.LastArg.ToString().ToFloat();
 
@@ -103,9 +102,8 @@ public class VS_Stability_SetterModSystem : ModSystem
     private TextCommandResult OnResetStabCommand(TextCommandCallingArgs args) {
         IServerPlayer player = (IServerPlayer) args.Caller.Player;
 
-        if (player == null || ServerAPI == null) {
-            return TextCommandResult.Error(Lang.Get("vs-stability-setter:not-player"));
-        }
+        if (player == null || ServerAPI == null) { return TextCommandResult.Error(Lang.Get("vsstabilitysetter:not-player")); }
+        if (ServerAPI == null) { return TextCommandResult.Error(Lang.Get("vsstabilitysetter:no-api")); }
 
         ServerChunkPos chunkPos = new(player.Entity.Pos.AsBlockPos);
 
@@ -120,21 +118,20 @@ public class VS_Stability_SetterModSystem : ModSystem
         
         IServerPlayer player = (IServerPlayer) args.Caller.Player;
         
-        if (player == null || ServerAPI == null) {
-            return TextCommandResult.Error(Lang.Get("vs-stability-setter:not-player"));
-        }
+        if (player == null || ServerAPI == null) { return TextCommandResult.Error(Lang.Get("vsstabilitysetter:not-player")); }
+        if (ServerAPI == null) { return TextCommandResult.Error(Lang.Get("vsstabilitysetter:no-api")); }
 
         Vintagestory.GameContent.SystemTemporalStability StabSystem = ServerAPI.ModLoader.GetModSystem<Vintagestory.GameContent.SystemTemporalStability>();
         ServerChunkPos chunkPos = new(player.Entity.Pos.AsBlockPos);
+        float stability = StabSystem.GetTemporalStability(player.Entity.Pos.AsBlockPos);
 
         if(setChunks.ContainsKey(chunkPos.ToString()) ) {
-            return TextCommandResult.Success(setChunks[chunkPos.ToString()].ToString());
+            return TextCommandResult.Success(Lang.Get("vsstabilitysetter:get-output", setChunks[chunkPos.ToString()].ToString()));
         } else {
             if(StabSystem != null) {
-                float stability = StabSystem.GetTemporalStability(player.Entity.Pos.AsBlockPos);
-                return TextCommandResult.Success(stability.ToString());
+                return TextCommandResult.Success(Lang.Get("vsstabilitysetter:get-output", stability.ToString()));
             }
-            return TextCommandResult.Error("Couldn't get chunk stability"); //TODO: Make this use a translation key.
+            return TextCommandResult.Error(Lang.Get("vsstabilitysetter:get-error"));
         }
     }
 
