@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using HarmonyLib;
 using System;
 using Vintagestory.API.MathTools;
+using System.ComponentModel;
 
 namespace VS_Stability_Setter;
 
@@ -15,6 +16,7 @@ public class VS_Stability_SetterModSystem : ModSystem
      private static ICoreServerAPI? ServerAPI { get; set; }
      
      private static Dictionary<string, float>  setChunks = new();
+    private static int confirmCode = 0;
      private static int StabilityMode = 0;
      private static float GlobalStability = 1;
      private static float GlobalStabilityOffset = 0;
@@ -68,7 +70,27 @@ public class VS_Stability_SetterModSystem : ModSystem
             .WithDescription(Lang.Get("vsstabilitysetter:resetstab-desc"))
             .RequiresPrivilege(Privilege.ban)
             .RequiresPlayer()
-            .HandleWith(new OnCommandDelegate(OnResetStabCommand));
+            .HandleWith(new OnCommandDelegate(OnResetStabCommand))
+            .BeginSubCommand("all")
+                .WithDescription(Lang.Get("vsstabilitysetter:resetstab-all-desc"))
+                .RequiresPrivilege(Privilege.ban)
+                .WithArgs(ServerAPI.ChatCommands.Parsers.OptionalIntRange("confirmCode", 10000, 99999, -1))
+                .HandleWith((args) => {
+                    int inputCode = args.LastArg == null ? -1 : Convert.ToInt32(args.LastArg.ToString());
+                    if(inputCode == confirmCode && confirmCode != -1) {
+                        setChunks.Clear();
+                        confirmCode = -1;
+                        return TextCommandResult.Success(Lang.Get("vsstabilitysetter:resetstab-all-success"));
+                    } else if(inputCode == -1) {
+                        int randomCode = new Random().Next(10000, 99999);
+                        confirmCode = randomCode;
+                        return TextCommandResult.Success(Lang.Get("vsstabilitysetter:resetstab-all-warning", confirmCode));
+                    } else {
+                        if(confirmCode == -1) return TextCommandResult.Error(Lang.Get("vsstabilitysetter:resetstab-all-error2"));
+                        return TextCommandResult.Error(Lang.Get("vsstabilitysetter:resetstab-all-error", confirmCode));
+                    }
+                })
+            .EndSubCommand();
         api.ChatCommands.Create("getStability")
             .WithDescription(Lang.Get("vsstabilitysetter:getstab-desc"))
             .RequiresPrivilege(Privilege.chat)
