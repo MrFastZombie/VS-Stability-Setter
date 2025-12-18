@@ -4,6 +4,7 @@
     "setstab-desc": "Sets the stability of the chunk you are in to a specific value. 1 is neutral stability, less is unstable and more is positive stability. Note that chunks are cubic, so higher or lower chunks in your column will have different values. \n\n<strong>Tip:</strong> Use .debug wireframe chunk to see chunk boundaries. \n\n<strong>Value range:</strong> -10000 to 10000.",
     "setstab-success": "Stability @ chunkpos {0} set to {1}.",
     "resetstab-desc": "Resets the stability of the chunk you are in to its default value.",
+    "resetstab-success": "Stability @ chunkpos {0} reset to {1}.",
     "resetstab-all-desc": "Resets stability everywhere. \n\n <strong>WARNING:</strong> This is not reversible!! \n\n <i>confirmCode is an optional parameter. Run this command without it first to get a confirmation code!</i>",
     "resetstab-all-success": "<strong>Stability reset for all chunks!</strong>",
     "resetstab-all-warning": "<strong>This command will reset stability in all chunks to default! THIS CANNOT BE UNDONE!!!!</strong> \nType <i>/resetStability all {0} to confirm.<i>",

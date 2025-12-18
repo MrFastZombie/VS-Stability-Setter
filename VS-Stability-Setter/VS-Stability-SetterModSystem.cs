@@ -189,13 +189,14 @@ public class VS_Stability_SetterModSystem : ModSystem
         if (player == null) { return TextCommandResult.Error(Lang.Get("vsstabilitysetter:not-player")); }
         if (ServerAPI == null) { return TextCommandResult.Error(Lang.Get("vsstabilitysetter:no-api")); }
 
+        Vintagestory.GameContent.SystemTemporalStability StabSystem = ServerAPI.ModLoader.GetModSystem<Vintagestory.GameContent.SystemTemporalStability>(); //Declare a temporal stability system to later get the stability value from a BlockPos.
         ServerChunkPos chunkPos = new(player.Entity.Pos.AsBlockPos);
 
         if( setChunks.ContainsKey(chunkPos.ToString()) ) {
             setChunks.Remove(chunkPos.ToString());
         }
         
-        return TextCommandResult.Success();
+        return TextCommandResult.Success(Lang.Get("vsstabilitysetter:resetstab-success", chunkPos.ToString(), StabSystem.GetTemporalStability(player.Entity.Pos.AsBlockPos)));
     }
 
     /// <summary>
