@@ -278,6 +278,9 @@ public class VS_Stability_SetterModSystem : ModSystem
             if(ServerAPI != null) {
                 bool stabilityEnabled = (bool)ServerAPI.World.Config["temporalStability"].GetValue();
                 if(stabilityEnabled) { //Only change anything if stability is enabled.
+                    Vintagestory.GameContent.SystemTemporalStability StabSystem = ServerAPI.ModLoader.GetModSystem<Vintagestory.GameContent.SystemTemporalStability>(); //Declare a temporal stability system
+                    float stormMod = StabSystem.StormStrength + StabSystem.modGlitchStrength;
+                    bool stormActive = StabSystem.StormData.nowStormActive;
                     BlockPos pos = new((int)x, (int)y, (int)z);
                     ServerChunkPos chunkPos = new(pos);
                     if(setChunks != null && StabilityMode == 0) { //Vanilla behavior mode
@@ -296,6 +299,9 @@ public class VS_Stability_SetterModSystem : ModSystem
                         }
                         __result += GlobalStabilityOffset;
                         __result = Math.Clamp(__result, -10000, 10000); //Don't let it go out of bounds!
+                    }
+                    if(stormActive) {
+                        __result = GameMath.Clamp(__result - stormMod, -10000f, 1.5f);
                     }
                 }
             }
