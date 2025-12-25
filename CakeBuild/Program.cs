@@ -26,7 +26,7 @@ public static class Program
 
 public class BuildContext : FrostingContext
 {
-    public const string ProjectName = "VS_Stability_Setter";
+    public const string ProjectName = "VS-Stability-Setter";
     public string BuildConfiguration { get; }
     public string Version { get; }
     public string Name { get; }
