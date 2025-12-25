@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using HarmonyLib;
 using System;
 using Vintagestory.API.MathTools;
-using System.ComponentModel;
 
 namespace VS_Stability_Setter;
 
