@@ -3,7 +3,7 @@
     "type": "Code",
     "modid": "vsstabilitysetter",
     "name": "VS-Stability-Setter",
-    "side": "Server",
+    "side": "Universal",
     "authors": [
         "MrFastZombie"
     ],
