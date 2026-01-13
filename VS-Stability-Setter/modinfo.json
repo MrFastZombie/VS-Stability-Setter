@@ -8,7 +8,7 @@
         "MrFastZombie"
     ],
     "description": "Uses Harmony patching to set chunk stability.",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "dependencies": {
         "game": "1.21.0"
     }
