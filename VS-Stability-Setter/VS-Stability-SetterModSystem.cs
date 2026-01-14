@@ -8,8 +8,6 @@ using HarmonyLib;
 using System;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Client;
-using System.Text;
-using Vintagestory.GameContent;
 
 namespace VS_Stability_Setter;
 
@@ -168,7 +166,6 @@ public class VS_Stability_SetterModSystem : ModSystem
     #region Client
 
     private static ICoreClientAPI? ClientAPI { get; set; }
-    private static float valueRecieved = 1f;
     private static IClientNetworkChannel? clientChannel;
     private static Dictionary<string, float> clientSetChunks = new();
     private static int ClientStabilityMode = 0;
@@ -189,10 +186,6 @@ public class VS_Stability_SetterModSystem : ModSystem
     }
 
     private void OnServerMessage(Network.NetworkApiResponse msg) {
-        if(msg.response.StartsWith("value:")) { //Stabillity value response
-            //TODO: Probably remove this.
-            valueRecieved = msg.response.Split(':')[1].Trim().ToFloat();
-        }
         if(msg.response.StartsWith("data-sync")) { //Data Sync
             clientSetChunks = msg.sendChunks == null ? new() : msg.sendChunks;
             ClientStabilityMode = msg.sendStabilityMode == null ? 0 : msg.sendStabilityMode.Value;

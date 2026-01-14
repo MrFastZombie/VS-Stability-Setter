@@ -1,6 +1,5 @@
 using Vintagestory.API.Server;
 using ProtoBuf;
-using Vintagestory.API.MathTools;
 using System.Collections.Generic;
 
 namespace VS_Stability_Setter;
@@ -14,8 +13,8 @@ class Network {
         serverChannel = 
              api.Network.RegisterChannel("stabilitysetter")
                 .RegisterMessageType(typeof(NetworkApiMessage))
-                .RegisterMessageType(typeof(NetworkApiResponse))
-                .SetMessageHandler<NetworkApiMessage>(OnClientMessage);
+                .RegisterMessageType(typeof(NetworkApiResponse));
+                //.SetMessageHandler<NetworkApiMessage>(OnClientMessage);
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
@@ -62,16 +61,5 @@ class Network {
     /// <param name="remove">If true, remove this chunk from the cache for everyone.</param>
     public void BroadcastChunkUpdate(string chunkPos, float stability, bool remove) {
         serverChannel.SendPacket(new NetworkApiResponse { response = "update", sendChunkPosString = chunkPos, sendStability = stability, sendRemove = remove }, api.World.AllPlayers as IServerPlayer[]);
-    }
-
-     //TODO: Probably remove this.
-     public void OnClientMessage(IServerPlayer player, NetworkApiMessage msg) {
-        if(msg.message.StartsWith("value?")) {
-            BlockPos playerPos = player.WorldData.EntityPlayer.Pos.AsBlockPos;
-            Vintagestory.GameContent.SystemTemporalStability StabSystem = api.ModLoader.GetModSystem<Vintagestory.GameContent.SystemTemporalStability>();
-            VS_Stability_Setter.VS_Stability_SetterModSystem.ServerChunkPos chunkPos = new(playerPos);
-            float stability = StabSystem.GetTemporalStability(playerPos);
-            serverChannel.SendPacket(new NetworkApiResponse { response = "value:" + stability.ToString() }, player);
-        }
     }
 }
