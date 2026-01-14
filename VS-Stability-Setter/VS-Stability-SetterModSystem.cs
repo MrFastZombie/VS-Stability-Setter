@@ -147,7 +147,15 @@ public class VS_Stability_SetterModSystem : ModSystem
             .WithArgs(ServerAPI.ChatCommands.Parsers.DoubleRange("stability", -10000, 10000))
             .RequiresPrivilege(Privilege.ban)
             .HandleWith(new OnCommandDelegate(OnSetGlobalStabOffsetCommand));
-        //TODO: Add command to allow player to request a data update manually.
+        api.ChatCommands.Create("requestStabilityData")
+            .WithDescription(Lang.Get("vsstabilitysetter:requeststabdata-desc"))
+            .RequiresPrivilege(Privilege.chat)
+            .RequiresPlayer()
+            .HandleWith((args) => {
+                if(serverNetwork == null) return TextCommandResult.Error(Lang.Get("vsstabilitysetter:no-network"));
+                serverNetwork.BroadcastData(setChunks, StabilityMode, GlobalStability, GlobalStabilityOffset, args.Caller.Player as IServerPlayer);
+                return TextCommandResult.Success(Lang.Get("vsstabilitysetter:requeststabdata-success"));
+            });
         
         api.Event.SaveGameLoaded += OnSaveGameLoading;
         api.Event.GameWorldSave += OnSaveGameSaving;

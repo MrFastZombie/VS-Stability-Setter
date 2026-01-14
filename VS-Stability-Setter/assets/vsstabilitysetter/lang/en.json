@@ -30,5 +30,8 @@
     "setglobalstaboffset-desc": "Sets a value to apply as an offset to all chunk stability values. Final stability values will be clamped to -10000 to 10000. \n\n<strong>Value range:</strong> -10000 to 10000.",
     "setglobalstaboffset-success": "Global stability offset set to {0}.",
     "extrainfo-global": " (Global stability is enabled).",
-    "extrainfo-offset": " (Offset by {0}.)"
+    "extrainfo-offset": " (Offset by {0}.)",
+    "requeststabdata-desc": "Resends all stability data to the client that runs the command. This should not be needed but is provided just in case.",
+    "requeststabdata-success": "Stability data resent to client.",
+    "no-network": "Command failed due to no server network."
 }
