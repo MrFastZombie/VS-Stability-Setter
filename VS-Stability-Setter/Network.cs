@@ -12,28 +12,25 @@ class Network {
         this.api = api;
         serverChannel = 
              api.Network.RegisterChannel("stabilitysetter")
-                .RegisterMessageType(typeof(NetworkApiMessage))
-                .RegisterMessageType(typeof(NetworkApiResponse));
-                //.SetMessageHandler<NetworkApiMessage>(OnClientMessage);
+                .RegisterMessageType(typeof(DataSyncPacket))
+                .RegisterMessageType(typeof(UpdatePacket));
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
-    public class NetworkApiMessage
-    {
-        public required string message;
+    public class DataSyncPacket {
+        public required string Response { get; set; }
+        public required Dictionary<string, float> SendChunks { get; set; }
+        public required int SendStabilityMode { get; set; }
+        public required float SendGlobalStability { get; set; }
+        public required float SendGlobalStabilityOffset { get; set; }
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
-    public class NetworkApiResponse
-    {
-        public required string response;
-        public Dictionary<string, float>? sendChunks;
-        public int? sendStabilityMode;
-        public float? sendGlobalStability;
-        public float? sendGlobalStabilityOffset;
-        public string? sendChunkPosString;
-        public float? sendStability;
-        public bool? sendRemove;
+    public class UpdatePacket {
+        public required string Response { get; set; }
+        public required string SendChunkPosString { get; set; }
+        public required float SendStability { get; set; }
+        public required bool SendRemove { get; set; }
     }
 
     /// <summary>
@@ -47,10 +44,20 @@ class Network {
     public void BroadcastData(Dictionary<string, float>  setChunks, int StabilityMode, float GlobalStability, float GlobalStabilityOffset, IServerPlayer? player) {
         dynamic? target;
         if(player == null) {
-            target = api.World.AllPlayers as IServerPlayer[];
+            target = api.World.AllOnlinePlayers as IServerPlayer[];
         } else target = player;
+        
+        if(api.World.AllOnlinePlayers.Length <= 0 && player == null) {
+            api.Logger.Debug("[Stability Setter] Skipped BroadcastData sync, no online players detected.");
+            return;
+        }
 
-        serverChannel.SendPacket(new NetworkApiResponse { response = "data-sync",  sendChunks = setChunks, sendStabilityMode = StabilityMode, sendGlobalStability = GlobalStability, sendGlobalStabilityOffset = GlobalStabilityOffset}, target);
+        if(target == null) {
+            api.Logger.Error("[Stability Setter] Skipped BroadcastData sync, target was null.");
+            return;
+        }
+
+        serverChannel.SendPacket(new DataSyncPacket { Response = "data-sync",  SendChunks = setChunks, SendStabilityMode = StabilityMode, SendGlobalStability = GlobalStability, SendGlobalStabilityOffset = GlobalStabilityOffset}, target);
     }
 
     /// <summary>
@@ -60,6 +67,6 @@ class Network {
     /// <param name="stability">The new stability value.</param>
     /// <param name="remove">If true, remove this chunk from the cache for everyone.</param>
     public void BroadcastChunkUpdate(string chunkPos, float stability, bool remove) {
-        serverChannel.SendPacket(new NetworkApiResponse { response = "update", sendChunkPosString = chunkPos, sendStability = stability, sendRemove = remove }, api.World.AllPlayers as IServerPlayer[]);
+        serverChannel.SendPacket(new UpdatePacket { Response = "update", SendChunkPosString = chunkPos, SendStability = stability, SendRemove = remove }, api.World.AllPlayers as IServerPlayer[]);
     }
 }

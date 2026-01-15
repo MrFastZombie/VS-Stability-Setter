@@ -185,27 +185,30 @@ public class VS_Stability_SetterModSystem : ModSystem
         ClientAPI = api;
 
         clientChannel = api.Network.RegisterChannel("stabilitysetter")
-            .RegisterMessageType(typeof(Network.NetworkApiMessage))
-            .RegisterMessageType(typeof(Network.NetworkApiResponse))
-            .SetMessageHandler<Network.NetworkApiResponse>(OnServerMessage);
+            .RegisterMessageType(typeof(Network.DataSyncPacket))
+            .RegisterMessageType(typeof(Network.UpdatePacket))
+            .SetMessageHandler<Network.UpdatePacket>(OnUpdatePacket)
+            .SetMessageHandler<Network.DataSyncPacket>(OnDataSyncPacket);
 
         harmony = new Harmony(Mod.Info.ModID);
         harmony.PatchAll();
     }
 
-    private void OnServerMessage(Network.NetworkApiResponse msg) {
-        if(msg.response.StartsWith("data-sync")) { //Data Sync
-            clientSetChunks = msg.sendChunks == null ? new() : msg.sendChunks;
-            ClientStabilityMode = msg.sendStabilityMode == null ? 0 : msg.sendStabilityMode.Value;
-            ClientGlobalStability = msg.sendGlobalStability == null ? 1 : msg.sendGlobalStability.Value;
-            ClientGlobalStabilityOffset = msg.sendGlobalStabilityOffset == null ? 0 : msg.sendGlobalStabilityOffset.Value;
+    private void OnDataSyncPacket(Network.DataSyncPacket packet) {
+        if(packet.Response.StartsWith("data-sync")) { //Data Sync
+            clientSetChunks = packet.SendChunks == null ? new() : packet.SendChunks; //Ternary operator: val = condition ? true : false
+            ClientStabilityMode = packet.SendStabilityMode;
+            ClientGlobalStability = packet.SendGlobalStability;
+            ClientGlobalStabilityOffset = packet.SendGlobalStabilityOffset;
         }
+    }
 
-        if(msg.response.StartsWith("update")) { //Updates to chunk cache (To avoid resending all data)
-            if(msg.sendChunkPosString == null) return; 
-            ServerChunkPos chunkPos = new(msg.sendChunkPosString);
-            float stability = msg.sendStability == null ? 1 : msg.sendStability.Value;
-            bool remove = msg.sendRemove == null ? false : msg.sendRemove.Value;
+    private void OnUpdatePacket(Network.UpdatePacket packet) {
+        if(packet.Response.StartsWith("update")) { //Updates to chunk cache (To avoid resending all data)
+            if(packet.SendChunkPosString == null) return; 
+            ServerChunkPos chunkPos = new(packet.SendChunkPosString);
+            float stability = packet.SendStability;
+            bool remove = packet.SendRemove;
             if(remove) {
                 clientSetChunks.Remove(chunkPos.ToString());
             } else {
