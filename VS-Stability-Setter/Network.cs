@@ -67,6 +67,10 @@ class Network {
     /// <param name="stability">The new stability value.</param>
     /// <param name="remove">If true, remove this chunk from the cache for everyone.</param>
     public void BroadcastChunkUpdate(string chunkPos, float stability, bool remove) {
-        serverChannel.SendPacket(new UpdatePacket { Response = "update", SendChunkPosString = chunkPos, SendStability = stability, SendRemove = remove }, api.World.AllPlayers as IServerPlayer[]);
+        if(api.World.AllOnlinePlayers.Length <= 0) {
+            api.Logger.Error("[Stability Setter] Skipped BroadcastChunkUpdate sync, target was null.");
+            return;
+        }
+        serverChannel.SendPacket(new UpdatePacket { Response = "update", SendChunkPosString = chunkPos, SendStability = stability, SendRemove = remove }, api.World.AllOnlinePlayers as IServerPlayer[]);
     }
 }
