@@ -8,7 +8,7 @@
             "name": "Launch Client (Debug)",
             "type": "coreclr",
             "request": "launch",
-            "program": "${env:VINTAGE_STORY_DEV}/Vintagestory.exe",
+            "program": "C:/Users/Skylar/AppData/Roaming/VSLGameVersions/1.22-pre.1/Vintagestory.exe",
             "linux": {
                 "program": "${env:VINTAGE_STORY_DEV}/Vintagestory"
             },
@@ -25,7 +25,7 @@
                 "--addOrigin",
                 "${workspaceFolder}/VS-Stability-Setter/assets",
                 "--dataPath",
-                "${env:VINTAGE_STORY_DEV_DATA}"
+                "C:/Users/Skylar/AppData/Roaming/VSLInstallations/22pre1Test"
             ],
             "console": "internalConsole",
             "stopAtEntry": false
@@ -34,7 +34,7 @@
             "name": "Launch Server",
             "type": "coreclr",
             "request": "launch",
-            "program": "${env:VINTAGE_STORY_DEV}/VintagestoryServer.exe",
+            "program": "C:/Users/Skylar/AppData/Roaming/VSLGameVersions/1.22-pre.1/VintagestoryServer.exe",
             "linux": {
                 "program": "${env:VINTAGE_STORY_DEV}/VintagestoryServer"
             },
@@ -49,7 +49,7 @@
                  "--addOrigin",
                  "${workspaceFolder}/VS-Stability-Setter/assets",
                  "--dataPath",
-                "${env:VINTAGE_STORY_DEV_DATA}"
+                "C:/Users/Skylar/AppData/Roaming/VSLInstallations/22pre1Test"
             ],
             "console": "internalConsole",
             "stopAtEntry": false
