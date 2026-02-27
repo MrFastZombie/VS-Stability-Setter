@@ -252,7 +252,7 @@ public class VS_Stability_SetterModSystem : ModSystem
         if (player == null) { return TextCommandResult.Error(Lang.Get("vsstabilitysetter:not-player")); }
         if (ServerAPI == null) { return TextCommandResult.Error(Lang.Get("vsstabilitysetter:no-api")); }
 
-        float stability = args.LastArg == null ? 1 : args.LastArg.ToString().ToFloat(); //Gets the stability from arguments. Defaults to 1 if someehow null.
+        float stability = (float)(args.LastArg == null ? 1 : (double)args.LastArg); //Gets the stability from arguments. Defaults to 1 if somehow null.
 
         ServerChunkPos chunkPos = new(player.Entity.Pos.AsBlockPos);
         setChunks[chunkPos.ToString()] = stability;
@@ -325,7 +325,7 @@ public class VS_Stability_SetterModSystem : ModSystem
     /// <param name="args"></param>
     /// <returns></returns>
     private TextCommandResult OnSetGlobalStabOffsetCommand(TextCommandCallingArgs args) {
-        float stability = args.LastArg == null ? 1 : args.LastArg.ToString().ToFloat();
+        float stability = (float)(args.LastArg == null ? 1 : (double)args.LastArg);
         GlobalStabilityOffset = stability;
         serverNetwork?.BroadcastData(setChunks, StabilityMode, GlobalStability, GlobalStabilityOffset, null);
         return TextCommandResult.Success(Lang.Get("vsstabilitysetter:setglobalstaboffset-success", GlobalStabilityOffset));
@@ -337,7 +337,7 @@ public class VS_Stability_SetterModSystem : ModSystem
     /// <param name="args"></param>
     /// <returns></returns>
     private TextCommandResult OnSetGlobalStabCommand(TextCommandCallingArgs args) {
-        float stability = args.LastArg == null ? 1 : args.LastArg.ToString().ToFloat();
+        float stability = (float)(args.LastArg == null ? 1 : (double)args.LastArg);
         GlobalStability = stability;
         serverNetwork?.BroadcastData(setChunks, StabilityMode, GlobalStability, GlobalStabilityOffset, null);
         return TextCommandResult.Success(Lang.Get("vsstabilitysetter:setglobalstab-success", GlobalStability));
